@@ -94,7 +94,6 @@ async def send_multiple_requests(uid, server_name, url):
             return None
             
         tasks = []
-        # প্রতি টোকেন থেকে ঠিক ১০টি করে রিকোয়েস্ট পাঠানোর লজিক
         requests_per_token = 10 
         
         for token_info in tokens:
@@ -202,6 +201,7 @@ def handle_requests():
             level = player_info["Level"]
             release_version = player_info["ReleaseVersion"]
 
+            # ফিক্সড লজিক: ভেরিয়েবল ঠিকভাবে অ্যাসাইন করা হয়েছে
             if region != "NA" and server_name != region:
                 app.logger.warning(f"Server name {server_name} does not match API region {region}. Using API region.")
                 server_name_used = region
