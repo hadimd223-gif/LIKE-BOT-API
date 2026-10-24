@@ -87,14 +87,22 @@ async def send_multiple_requests(uid, server_name, url):
         if encrypted_uid is None:
             app.logger.error("Encryption failed.")
             return None
-        tasks = []
+        
         tokens = load_tokens(server_name)
         if tokens is None:
             app.logger.error("Failed to load tokens.")
             return None
-        for i in range(100):
-            token = tokens[i % len(tokens)]["token"]
-            tasks.append(send_request(encrypted_uid, token, url))
+            
+        tasks = []
+        # প্রতি টোকেন থেকে ঠিক ১০টি করে রিকোয়েস্ট পাঠানোর লজিক
+        requests_per_token = 10 
+        
+        for token_info in tokens:
+            token = token_info.get("token")
+            if token:
+                for _ in range(requests_per_token):
+                    tasks.append(send_request(encrypted_uid, token, url))
+                    
         results = await asyncio.gather(*tasks, return_exceptions=True)
         return results
     except Exception as e:
@@ -189,13 +197,11 @@ def handle_requests():
 
     try:
         def process_request():
-            # Fetch player info from the new API
             player_info = fetch_player_info(uid)
             region = player_info["Region"]
             level = player_info["Level"]
             release_version = player_info["ReleaseVersion"]
 
-            # Validate server_name against region from API
             if region != "NA" and server_name != region:
                 app.logger.warning(f"Server name {server_name} does not match API region {region}. Using API region.")
                 server_name_used = region
